@@ -7,7 +7,7 @@ import {
 	Post,
 	Put
 } from '@nestjs/common';
-import { SuperHeroService } from './superhero.service';
+import { SuperHeroService } from './services/superhero.service';
 import { CreateSuperheroDto } from './dto/create-superhero.dto';
 
 @Controller('superheroes')
@@ -17,6 +17,11 @@ export class SuperHeroController {
 	@Get()
 	getAllHeroes() {
 		return this.superHeroService.getAllHeroes();
+	}
+
+	@Get(':superheroId')
+	getSuperHeroById(@Param('superheroId') superheroId: number) {
+		return this.superHeroService.getSuperheroById(superheroId);
 	}
 
 	@Post()

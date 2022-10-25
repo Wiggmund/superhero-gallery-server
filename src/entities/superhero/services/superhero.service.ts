@@ -1,15 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { PhotosService } from './../../photos/photos.service';
+import { SuperHeroPhotosService } from './superhero-photos.service';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Superhero } from './entity/superhero.entity';
+import { Superhero } from '../entity/superhero.entity';
 import { Repository } from 'typeorm';
-import { CreateSuperheroDto } from './dto/create-superhero.dto';
-import { InsertionException } from '../../common/exceptions/insertion.exception';
+import { CreateSuperheroDto } from '../dto/create-superhero.dto';
+import { InsertionException } from '../../../common/exceptions/insertion.exception';
 
 @Injectable()
 export class SuperHeroService {
 	constructor(
 		@InjectRepository(Superhero)
-		private superheroRepository: Repository<Superhero>
+		private superheroRepository: Repository<Superhero>,
+
+		@Inject(forwardRef(() => SuperHeroPhotosService))
+		private superHeroPhotosService: SuperHeroPhotosService,
+
+		private photosService: PhotosService
 	) {}
 
 	getAllHeroes() {
@@ -123,6 +130,14 @@ export class SuperHeroService {
 			throw new InsertionException(
 				`Superhero with given id=${id} not found`
 			);
+		}
+
+		const superheroPhotosIds = (
+			await this.superHeroPhotosService.getSuperheroPhotos(id)
+		).map((photo) => photo.id);
+
+		for (const photoId of superheroPhotosIds) {
+			await this.photosService.removePhoto(photoId);
 		}
 
 		await this.superheroRepository

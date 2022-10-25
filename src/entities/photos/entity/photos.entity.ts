@@ -7,7 +7,10 @@ export class Photo {
 	id: number;
 
 	@Column({ unique: true })
-	url: string;
+	url_original: string;
+
+	@Column({ unique: true })
+	url_min: string;
 
 	@Column()
 	type: string;
