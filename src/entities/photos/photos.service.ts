@@ -47,6 +47,10 @@ export class PhotosService {
 		height: string,
 		width: string
 	): Promise<number[]> {
+		if (!files || files.length === 0) {
+			throw new ParametersException(`You didn't provide any photo files`);
+		}
+
 		if (!height) {
 			throw new ParametersException(
 				`You have to provide height parameter for resizing (your value: "${height}")`
