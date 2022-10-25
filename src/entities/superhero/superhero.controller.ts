@@ -6,7 +6,8 @@ import {
 	Get,
 	Param,
 	Post,
-	Put
+	Put,
+	Query
 } from '@nestjs/common';
 import { SuperHeroService } from './services/superhero.service';
 import { CreateSuperheroDto } from './dto/create-superhero.dto';
@@ -16,8 +17,8 @@ export class SuperHeroController {
 	constructor(private superHeroService: SuperHeroService) {}
 
 	@Get()
-	getAllHeroes() {
-		return this.superHeroService.getAllHeroes();
+	getAllHeroes(@Query('take') take: number, @Query('skip') skip: number) {
+		return this.superHeroService.getAllHeroesScroll(take, skip);
 	}
 
 	@Get(':superheroId')

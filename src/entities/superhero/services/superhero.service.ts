@@ -19,9 +19,22 @@ export class SuperHeroService {
 		private photosService: PhotosService
 	) {}
 
-	getAllHeroes() {
+	async getAllHeroesScroll(take: number, skip: number) {
+		if (!take && !skip) {
+			return this.getAllHeroes();
+		}
+
+		if (!take && skip) {
+			return this.superheroRepository
+				.createQueryBuilder('superhero')
+				.skip(skip)
+				.getMany();
+		}
+
 		return this.superheroRepository
 			.createQueryBuilder('superhero')
+			.take(take)
+			.skip(skip)
 			.getMany();
 	}
 
@@ -146,5 +159,11 @@ export class SuperHeroService {
 			.execute();
 
 		return candidate;
+	}
+
+	private async getAllHeroes() {
+		return this.superheroRepository
+			.createQueryBuilder('superhero')
+			.getMany();
 	}
 }
