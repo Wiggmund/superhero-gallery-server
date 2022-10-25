@@ -16,8 +16,7 @@ export class CreatePhotoDto {
 		const min = process.env.MIN_IMAGES_DIR;
 
 		this.type = file.mimetype.split('/')[1];
-		this.filename = file.filename.slice(0, file.filename.lastIndexOf('.'));
-		this.destination = file.destination;
+		this.filename = file.filename;
 		this.size = file.size;
 		this.url_original = `http://${host}:${port}/${max}/${this.filename}.${this.type}`;
 		this.url_min = `http://${host}:${port}/${min}/${this.filename}.${this.type}`;

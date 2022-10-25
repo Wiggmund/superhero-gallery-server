@@ -19,9 +19,6 @@ export class Photo {
 	filename: string;
 
 	@Column()
-	destination: string;
-
-	@Column()
 	size: number;
 
 	@ManyToOne(() => Superhero, (superhero) => superhero.photos)

@@ -132,13 +132,9 @@ export class SuperHeroService {
 			);
 		}
 
-		const superheroPhotosIds = (
-			await this.superHeroPhotosService.getSuperheroPhotos(id)
-		).map((photo) => photo.id);
-
-		for (const photoId of superheroPhotosIds) {
-			await this.photosService.removePhoto(photoId);
-		}
+		const superheroPhotos =
+			await this.superHeroPhotosService.getSuperheroPhotos(id);
+		this.photosService.removeManyPhotos(superheroPhotos);
 
 		await this.superheroRepository
 			.createQueryBuilder()

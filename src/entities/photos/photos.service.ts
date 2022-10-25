@@ -2,7 +2,7 @@ import { EntityNotFoundException } from './../../common/exceptions/entity-not-fo
 import { Superhero } from './../superhero/entity/superhero.entity';
 import { ParametersException } from './../../common/exceptions/parameters.exception';
 import { IResizeOptions } from './types/resize-options.interface';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Photo } from './entity/photos.entity';
 import { Repository } from 'typeorm';
@@ -11,6 +11,7 @@ import { CreatePhotoDto } from './dto/create-photo.dto';
 import * as sharp from 'sharp';
 import { FileSystemService } from '../../file-system/file-system.service';
 import * as path from 'path';
+import { PhotoResizeException } from '../../common/exceptions/photo-resize.exception';
 
 @Injectable()
 export class PhotosService {
@@ -53,31 +54,7 @@ export class PhotosService {
 		}
 		const resizeOptions = this.generateResizeOptions(height, width);
 
-		const candidates = files.map((file) => {
-			const photo = new CreatePhotoDto(file);
-			const fullName = `${photo.filename}.${photo.type}`;
-
-			const bigImagesPath = path.resolve(
-				process.env.BIG_IMAGES_PATH,
-				fullName
-			);
-			const minImagesPath = path.resolve(
-				process.env.MIN_IMAGES_PATH,
-				fullName
-			);
-
-			sharp(bigImagesPath)
-				.resize(resizeOptions)
-				.toFile(minImagesPath, (err) => {
-					if (err) {
-						throw new InternalServerErrorException(
-							'Error while resizing'
-						);
-					}
-				});
-
-			return photo;
-		});
+		const candidates = this.getCandidatesAndResize(files, resizeOptions);
 
 		const photosId = (
 			(
@@ -99,7 +76,7 @@ export class PhotosService {
 		return photosId;
 	}
 
-	async removePhoto(photoId: number): Promise<Photo> {
+	async removePhotoById(photoId: number): Promise<Photo> {
 		const candidate = await this.getPhotoById(photoId);
 
 		if (!candidate) {
@@ -115,12 +92,24 @@ export class PhotosService {
 			.where('id = :photoId', { photoId })
 			.execute();
 
-		this.fileSystemService.deletePhotoFile(
-			candidate.filename,
-			candidate.type
-		);
+		this.fileSystemService.removePhotoFile(candidate);
 
 		return candidate;
+	}
+
+	async removeManyPhotos(photos: Photo[]): Promise<Photo[]> {
+		const ids = photos.map((photo) => photo.id);
+
+		await this.photoRepository
+			.createQueryBuilder()
+			.delete()
+			.from(Photo)
+			.where('id IN (:...ids)', { ids })
+			.execute();
+
+		this.fileSystemService.removeManyPhotoFiles(photos);
+
+		return photos;
 	}
 
 	private generateResizeOptions(
@@ -134,5 +123,34 @@ export class PhotosService {
 		}
 
 		return options;
+	}
+
+	private getCandidatesAndResize(
+		files: Express.Multer.File[],
+		resizeOptions: IResizeOptions
+	): CreatePhotoDto[] {
+		return files.map((file) => {
+			const photo = new CreatePhotoDto(file);
+
+			const bigImagesPath = path.resolve(
+				process.env.BIG_IMAGES_PATH,
+				photo.filename
+			);
+			const minImagesPath = path.resolve(
+				process.env.MIN_IMAGES_PATH,
+				photo.filename
+			);
+
+			sharp(bigImagesPath)
+				.resize(resizeOptions)
+				.toFile(minImagesPath, (err) => {
+					if (err) {
+						console.error(err);
+						throw new PhotoResizeException('Error while resizing');
+					}
+				});
+
+			return photo;
+		});
 	}
 }
