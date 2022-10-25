@@ -5,27 +5,10 @@ import * as path from 'path';
 @Injectable()
 export class FileSystemService {
 	deletePhotoFile(filename: string, type: string) {
-		const { STATIC_FOLDER, ORIGINAL_PHOTO_SIZE, MINIMIZED_PHOTO_SIZE } =
-			process.env;
 		const fullName = `${filename}.${type}`;
 
-		const originalPath = path.resolve(
-			__dirname,
-			'..',
-			'..',
-			STATIC_FOLDER,
-			ORIGINAL_PHOTO_SIZE,
-			fullName
-		);
-
-		const minPath = path.resolve(
-			__dirname,
-			'..',
-			'..',
-			STATIC_FOLDER,
-			MINIMIZED_PHOTO_SIZE,
-			fullName
-		);
+		const originalPath = path.resolve(process.env.BIG_IMAGES_PATH, fullName);
+		const minPath = path.resolve(process.env.MIN_IMAGES_PATH, fullName);
 
 		try {
 			fs.rmSync(originalPath);

@@ -10,6 +10,7 @@ import { Express } from 'express';
 import { CreatePhotoDto } from './dto/create-photo.dto';
 import * as sharp from 'sharp';
 import { FileSystemService } from '../../file-system/file-system.service';
+import * as path from 'path';
 
 @Injectable()
 export class PhotosService {
@@ -50,21 +51,24 @@ export class PhotosService {
 				`You have to provide height parameter for resizing (your value: "${height}")`
 			);
 		}
-
 		const resizeOptions = this.generateResizeOptions(height, width);
-		console.log('resizeOptions', resizeOptions);
-		const { STATIC_FOLDER, ORIGINAL_PHOTO_SIZE, MINIMIZED_PHOTO_SIZE } =
-			process.env;
 
 		const candidates = files.map((file) => {
 			const photo = new CreatePhotoDto(file);
+			const fullName = `${photo.filename}.${photo.type}`;
 
-			const photoOriginalPath = `${STATIC_FOLDER}/${ORIGINAL_PHOTO_SIZE}/${photo.filename}.${photo.type}`;
-			const photoMinPath = `${STATIC_FOLDER}/${MINIMIZED_PHOTO_SIZE}/${photo.filename}.${photo.type}`;
+			const bigImagesPath = path.resolve(
+				process.env.BIG_IMAGES_PATH,
+				fullName
+			);
+			const minImagesPath = path.resolve(
+				process.env.MIN_IMAGES_PATH,
+				fullName
+			);
 
-			sharp(photoOriginalPath)
+			sharp(bigImagesPath)
 				.resize(resizeOptions)
-				.toFile(photoMinPath, (err) => {
+				.toFile(minImagesPath, (err) => {
 					if (err) {
 						throw new InternalServerErrorException(
 							'Error while resizing'
@@ -74,7 +78,6 @@ export class PhotosService {
 
 			return photo;
 		});
-		console.log('candidates', candidates);
 
 		const photosId = (
 			(
@@ -86,8 +89,6 @@ export class PhotosService {
 					.execute()
 			).identifiers as Pick<Photo, 'id'>[]
 		).map((item) => item.id);
-
-		console.log('photosId', photosId);
 
 		await this.superheroRepository
 			.createQueryBuilder()
