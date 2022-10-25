@@ -134,7 +134,9 @@ export class SuperHeroService {
 
 		const superheroPhotos =
 			await this.superHeroPhotosService.getSuperheroPhotos(id);
-		this.photosService.removeManyPhotos(superheroPhotos);
+		if (superheroPhotos.length > 0) {
+			this.photosService.removeManyPhotos(superheroPhotos);
+		}
 
 		await this.superheroRepository
 			.createQueryBuilder()

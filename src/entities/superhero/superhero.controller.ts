@@ -1,3 +1,4 @@
+import { DtoValidationPipe } from './../../common/pipes/dto-validation.pipe';
 import {
 	Body,
 	Controller,
@@ -25,12 +26,15 @@ export class SuperHeroController {
 	}
 
 	@Post()
-	createSuperhero(@Body() dto: CreateSuperheroDto) {
+	createSuperhero(@Body(DtoValidationPipe) dto: CreateSuperheroDto) {
 		return this.superHeroService.createSuperhero(dto);
 	}
 
 	@Put(':id')
-	updateSuperhero(@Param('id') id: number, @Body() dto: CreateSuperheroDto) {
+	updateSuperhero(
+		@Param('id') id: number,
+		@Body(DtoValidationPipe) dto: CreateSuperheroDto
+	) {
 		return this.superHeroService.updateSuperhero(id, dto);
 	}
 
