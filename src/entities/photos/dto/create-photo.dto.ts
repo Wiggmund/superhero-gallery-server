@@ -18,7 +18,7 @@ export class CreatePhotoDto {
 		this.type = file.mimetype.split('/')[1];
 		this.filename = file.filename;
 		this.size = file.size;
-		this.url_original = `http://${host}:${port}/${max}/${this.filename}.${this.type}`;
-		this.url_min = `http://${host}:${port}/${min}/${this.filename}.${this.type}`;
+		this.url_original = `http://${host}:${port}/${max}/${this.filename}`;
+		this.url_min = `http://${host}:${port}/${min}/${this.filename}`;
 	}
 }

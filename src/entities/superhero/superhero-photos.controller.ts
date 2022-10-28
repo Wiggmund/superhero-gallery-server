@@ -56,6 +56,11 @@ export class SuperheroPhotosController {
 		return this.superheroPhotosService.getSuperheroPhotos(superheroId);
 	}
 
+	@Get(':superheroId/avatar')
+	getSuperheroAvatar(@Param('superheroId') superheroId: number) {
+		return this.superheroPhotosService.getSuperheroAvatar(superheroId);
+	}
+
 	@Post(':superheroId/:height')
 	@UseInterceptors(FilesInterceptor('files', 6, filesConfig))
 	uploadFileResizeAuto(
